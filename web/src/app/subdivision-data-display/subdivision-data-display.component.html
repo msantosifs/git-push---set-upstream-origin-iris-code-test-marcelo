@@ -1,1 +1,55 @@
-<p>Display the subdivision data here!</p>
+<div class="filter-container">
+    <label for="filter">Filter by subdivision status code:</label>
+    <select id="filter" (change)="onFilterChange($event.target)">
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Future">Future</option>
+        <option value="Builtout">Builtout</option>
+    </select>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+        <tr>
+            <th *ngFor="let config of tableConfig"
+                [hidden]="config.hidden"
+                [ngClass]="{ 'sortable': config.sortable}"
+                [ngStyle]="getStyle(config)"
+                (click)="config.sortable ? onSortChange(config.property) : null">
+                <div class="cell">
+                    <i *ngIf="config.sortable" class="material-icons">arrow_upward</i>
+                    <span class="content-overflow" [appTooltip]="config.displayName">{{ config.displayName }}</span>
+                </div>
+            </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let subdivision of subdivisions">
+            <td *ngFor="let config of tableConfig"
+                [hidden]="config.hidden"
+                [ngStyle]="getStyle(config)"
+                [attr.data-column]="config.displayName">
+                <div class="cell">
+                    <ng-container *ngIf="config.type !== 'date'; else dateBlock">
+                        <span class="content-overflow" [appTooltip]="subdivision[config.property]">{{ subdivision[config.property] }}</span>
+                    </ng-container>
+                    <ng-template #dateBlock>
+                        {{ subdivision[config.property] | toDate | date:'shortDate' }}
+                    </ng-template>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="footer">
+    <div>
+        <button (click)="changePage(-1)" [disabled]="currentPage$.getValue() == 1">Prev</button>
+        Page {{ currentPage$.getValue() }}
+        <button (click)="changePage(1)" [disabled]="((currentPage$.getValue() - 1) * PAGE_SIZE + subdivisions.length) >= filteredSize">Next</button>
+    </div>
+    <div>Total Rows: {{ filteredSize }}</div>
+</div>
